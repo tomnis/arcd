@@ -1,2 +1,19 @@
 *.class
-*.log
+*.swo
+*.swp
+
+*.DS_Store
+
+.gradle
+build
+
+*.iml
+*.ipr
+*.iws
+
+src/main/resources/reference.conf
+
+# dont include the uncompressed dataset
+src/main/resources/street_names_by_zip_20171228.tsv
+
+docker/*/data

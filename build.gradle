@@ -1,0 +1,28 @@
+plugins {
+    id 'idea'
+    id 'scala'
+}
+
+project.ext {
+    junitVersion = '4.12'
+    scalaVersion = '2.12.2'
+    scalatestVersion = '3.0.4'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+
+    compile group: 'org.scala-lang', name: 'scala-library', version: project.scalaVersion
+
+    testCompile group: 'junit', name: 'junit', version: project.junitVersion
+    testCompile group: 'org.scalatest', name: 'scalatest_2.12', version: project.scalatestVersion
+}
+
+test {
+    testLogging {
+        events 'PASSED', 'STARTED', 'FAILED', 'SKIPPED', 'standard_out', 'standard_error'
+    }
+}
