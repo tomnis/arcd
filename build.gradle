@@ -7,6 +7,7 @@ project.ext {
     junitVersion = '4.12'
     scalaVersion = '2.12.2'
     scalatestVersion = '3.0.4'
+    tinylogVersion = '1.3.5'
 }
 
 repositories {
@@ -15,6 +16,7 @@ repositories {
 
 dependencies {
 
+    compile group: 'org.tinylog', name: 'tinylog', version: project.tinylogVersion
     compile group: 'org.scala-lang', name: 'scala-library', version: project.scalaVersion
 
     testCompile group: 'junit', name: 'junit', version: project.junitVersion

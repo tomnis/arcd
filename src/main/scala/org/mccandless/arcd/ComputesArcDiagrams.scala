@@ -1,5 +1,9 @@
 package org.mccandless.arcd
 
+import org.pmw.tinylog.Logger
+
+import scala.util.Try
+
 /**
   * Computes the arc diagram for a given String.
   *
@@ -17,7 +21,7 @@ trait ComputesArcDiagrams {
   private lazy val substrings: Seq[(Int, Int, String)] = {
     val strings = for {
       start <- this.s.indices
-      end <- start + 1 until this.s.length
+      end <- start + 1 to this.s.length
       substr = this.s.substring(start, end)
       if substr.nonEmpty
     } yield (start, end, substr)
@@ -26,7 +30,14 @@ trait ComputesArcDiagrams {
   }
 
   def arcDiagram: Seq[Arc] = {
-    Seq.empty
+
+    for {
+      sub1 <- this.substrings
+      sub2 <- this.substrings
+      if sub1 != sub2 && sub1._3 == sub2._3 && isEssentialMatchingPair(sub1._1, sub2._1, sub1._3.length)
+    } yield {
+      Arc(sub1._1, sub2._1, sub1._3.length)
+    }
   }
 
 
@@ -50,11 +61,36 @@ trait ComputesArcDiagrams {
     lazy val identical: Boolean = substr1 == substr2
     lazy val nonOverlapping: Boolean = start1 + length <= start2 || start2 + length <= start1
     lazy val consecutive: Boolean = start1 < start2 && {
-      val z: String = this.s.substring(start1, start1 + length)
-      !this.s.substring(start1, start2 + length).contains(z)
+      Logger.info(s"checking consecutive $substr1 $substr2")
+      !this.s.substring(start1 + 1, start2).contains(substr1)
     }
     lazy val maximal: Boolean = {
+      Logger.info(s"checking maximal $substr1 $substr2")
+      // check start1-1, start2-1
+      val prefix1: Option[String] = Try(this.s.substring(start1 - 1, start1 + length)).toOption
+      val prefix2: Option[String] = Try(this.s.substring(start2 - 1, start2 + length)).toOption
 
+      // check start1+2, start2+1
+      val suffix1: Option[String] = Try(this.s.substring(start1, start1 + length + 1)).toOption
+      val suffix2: Option[String] = Try(this.s.substring(start2, start2 + length + 1)).toOption
+
+      val prefixesEqual: Boolean = (for {
+        p1 <- prefix1
+        p2 <- prefix2
+      } yield {
+        p1 == p2
+      }).getOrElse(false)
+
+
+      val suffixesEqual: Boolean = (for {
+        s1 <- suffix1
+        s2 <- suffix2
+      } yield {
+        s1 == s2
+      }).getOrElse(false)
+      // TODO also check that the new strings are nonoverlapping
+
+      !prefixesEqual && !suffixesEqual
     }
 
     identical && nonOverlapping && consecutive && maximal
@@ -89,7 +125,20 @@ trait ComputesArcDiagrams {
     * @return
     */
   def isEssentialMatchingPair(start1: Int, start2: Int, length: Int): Boolean = {
-    false
+    lazy val isMaximalMatchingPair: Boolean = this.isMaximalMatchingPair(start1, start2, length)
+
+    lazy val isMaximalInRepetitionRegion: Boolean = {
+      val isInRepetitionRegion: Boolean = this.repetitionRegions.exists{ case (start: Int, end: Int) => start <= start1 && start <= start2 && end >= start1 + length && end >= start2 + length }
+      isMaximalMatchingPair && !isInRepetitionRegion
+    }
+
+    lazy val isMaximalInFundamentalSubstring: Boolean = {
+      isMaximalMatchingPair && false
+    }
+
+    lazy val isConsecutiveFundamentalSubstring: Boolean = false
+
+    isMaximalInRepetitionRegion || isMaximalInFundamentalSubstring || isConsecutiveFundamentalSubstring
   }
 
 
